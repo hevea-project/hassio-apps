@@ -1,0 +1,41 @@
+name: Hevea Onboarding App
+description: Hevea Onboarding App
+version: 1.0.0
+slug: hassio-onboarding
+init: false
+arch:
+- aarch64
+- amd64
+hassio_api: true
+hassio_role: admin
+host_dbus: true
+host_network: true
+webui: http://[HOST]:[PORT:7040]
+options:
+  ap_app_name: hevea-hassio-access-point
+  api_addr: localhost:7040
+  app_addr: https://app.hevea-project.io
+  app_name: hevea_hassio_onboarding
+  log_level: info
+  networks:
+  - ssid: Hevea Access Point
+    password: abcd1234
+    id: '1234567890'
+  openvpn_app_name: hevea_hassio_openvpn
+  portal_port: 80
+  portal_band: 2.4
+schema:
+  ap_app_name: str
+  api_addr: str
+  app_addr: str
+  app_name: str
+  log_level: str
+  networks:
+  - ssid: str
+    password: password
+    id: str
+  openvpn_app_name: str
+  portal_port: int
+  portal_band: float
+image: docker.io/lebauce/hassio-onboarding
+url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-onboarding
