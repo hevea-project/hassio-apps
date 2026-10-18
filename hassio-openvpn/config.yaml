@@ -3,7 +3,7 @@ description: Hevea OpenVPN client
 version: 1.0.0
 slug: hassio-openvpn
 init: false
-url: https://github.com/hevea-project/hevea-hassio-apps/tree/main/hassio-openvpn
+url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-openvpn
 privileged:
 - NET_ADMIN
 devices:
