@@ -8,7 +8,7 @@ Home Assistant Apps (formerly add-ons) for the Hevea project.
 | --- | --- |
 | [hassio-access-point](hassio-access-point/) | Create a WiFi access point to directly connect devices to Home Assistant |
 | [hassio-openvpn](hassio-openvpn/) | Connect Home Assistant to a remote network via OpenVPN |
-| [hassio-onboarding](hassio-onboarding/) | Interactive onboarding experience for new Home Assistant users |
+| [hassio-gateway](hassio-gateway/) | Device commissioning, onboarding portal and user database sync |
 
 ## Installation
 
@@ -28,7 +28,13 @@ Or use the button below:
 To sync configs and docs from the source addon repositories:
 
 ```bash
-python3 sync_addons.py ../hassio-access-point ../hassio-openvpn ../hassio-onboarding
+# Access Point and OpenVPN use the default image template
+python3 sync_addons.py ../hassio-access-point ../hassio-openvpn
+
+# Gateway is synced from the hevea mono-repo with a target name override
+# and a custom image template (images are named {arch}-gateway by the CI)
+python3 sync_addons.py ../docker/gateway:hassio-gateway \
+  --image-template "ghcr.io/hevea-project/{arch}-{addon}"
 ```
 
 ## License
