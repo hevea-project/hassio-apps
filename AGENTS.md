@@ -70,6 +70,22 @@ The image resolves to `ghcr.io/hevea-project/gateway` via the multi-arch
 manifest published by the mono-repo CI (which also publishes per-arch
 images as `amd64-gateway`, `aarch64-gateway`).
 
+## Versioning and Releases
+
+Home Assistant uses the `version` field from `config.yaml` as the Docker image tag:
+`version: "1.2.3"` → HA pulls `ghcr.io/hevea-project/gateway:1.2.3`.
+
+The mono-repo CI publishes images with tags derived from git tags (`v1.2.3` → `1.2.3`).
+To release a new version:
+
+1. Update `version` in `../docker/gateway/config.yaml` (mono-repo)
+2. Commit, push to master, and create a git tag `v1.2.3`
+3. CI publishes `ghcr.io/hevea-project/gateway:1.2.3`
+4. Sync this repo: `python3 sync_addons.py ../docker/gateway:hassio-gateway`
+5. Commit and push — Home Assistant detects the new version
+
+The `version` in `config.yaml` must match a published image tag on GHCR.
+
 ## Key Patterns
 
 - No Dockerfiles in this repo — images are built in sibling repos
