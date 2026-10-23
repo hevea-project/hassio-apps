@@ -1,15 +1,13 @@
-name: Hevea Access Point
-version: 0.5.4.5
+name: Hass.io Access Point for Hevea
+version: 1.0.0
 slug: hassio-access-point
 description: Create a WiFi access point to directly connect devices to Home Assistant
   for Hevea
 arch:
-- armhf
-- armv7
 - aarch64
 - amd64
-- i386
-url: https://github.com/hevea-project/hevea-hassio-apps/tree/main/hassio-access-point
+url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-access-point
+image: ghcr.io/hevea-project/hassio-access-point
 host_network: true
 apparmor: true
 host_dbus: true
@@ -17,8 +15,6 @@ privileged:
 - NET_ADMIN
 init: false
 options:
-  ssid: null
-  wpa_passphrase: null
   channel: 6
   address: 192.168.99.1
   netmask: 255.255.255.0
@@ -60,4 +56,3 @@ schema:
   - match(^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)
   dnsmasq_config_override:
   - str?
-image: ghcr.io/hevea-project/hassio-access-point
