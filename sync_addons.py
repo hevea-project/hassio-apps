@@ -81,7 +81,7 @@ def _adapt_config(raw_content: str, addon_dir: Path, target_name: str | None = N
     # The target name is used for slug, url, and app_name (things that must
     # match the directory in this apps repo). The source directory name is
     # used for the image template, since images are named after the service
-    # (e.g. ghcr.io/hevea-project/{arch}-gateway, not {arch}-hassio-gateway).
+    # (e.g. ghcr.io/hevea-project/gateway, not ghcr.io/hevea-project/hassio-gateway).
     addon_name = target_name or addon_dir.name
     image_name = addon_dir.name
 

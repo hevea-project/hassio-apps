@@ -53,5 +53,5 @@ schema:
   - ssid: str
     password: password
     id: str
-image: ghcr.io/hevea-project/{arch}-gateway
+image: ghcr.io/hevea-project/gateway
 url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-gateway

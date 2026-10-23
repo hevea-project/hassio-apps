@@ -28,14 +28,12 @@ Or use the button below:
 To sync configs and docs from the source addon repositories:
 
 ```bash
-# Access Point and OpenVPN use the default image template
-python3 sync_addons.py ../hassio-access-point ../hassio-openvpn
-
-# Gateway is synced from the hevea mono-repo with a target name override
-# and a custom image template (images are named {arch}-gateway by the CI)
-python3 sync_addons.py ../docker/gateway:hassio-gateway \
-  --image-template "ghcr.io/hevea-project/{arch}-{addon}"
+python3 sync_addons.py ../hassio-access-point ../hassio-openvpn ../docker/gateway:hassio-gateway
 ```
+
+The gateway is synced from the hevea mono-repo with a target name override
+(`../docker/gateway:hassio-gateway`). All images use the default template
+`ghcr.io/hevea-project/<name>` and resolve via multi-arch manifests.
 
 ## License
 
