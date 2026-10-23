@@ -1,7 +1,7 @@
-name: Hevea Onboarding App
-description: Hevea Onboarding App
+name: Hevea Gateway
+description: Hevea Gateway - device commissioning, onboarding portal and user database sync
 version: 1.0.0
-slug: hassio-onboarding
+slug: hassio-gateway
 init: false
 arch:
 - aarch64
@@ -12,30 +12,46 @@ host_dbus: true
 host_network: true
 webui: http://[HOST]:[PORT:7040]
 options:
-  ap_app_name: hevea-hassio-access-point
-  api_addr: localhost:7040
+  access_point: true
+  api_addr: 0.0.0.0:7040
   app_addr: https://app.hevea-project.io
-  app_name: hevea_hassio_onboarding
+  app_name: hassio-gateway
+  ap_app_name: hassio-access-point
+  ap_ssid: ''
+  commission_extract_path: /data/commissions
   log_level: info
+  openvpn_app_name: hassio-openvpn
+  portal_band: 2.4
+  portal_port: 80
+  supervisor_driver: supervisor
+  sync_db_path: /data/db
+  sync_enabled: false
+  sync_interval: 300
+  wifi_interface: ''
   networks:
   - ssid: Hevea Access Point
     password: abcd1234
     id: '1234567890'
-  openvpn_app_name: hevea_hassio_openvpn
-  portal_port: 80
-  portal_band: 2.4
 schema:
-  ap_app_name: str
+  access_point: bool
   api_addr: str
   app_addr: str
   app_name: str
+  ap_app_name: str
+  ap_ssid: str
+  commission_extract_path: str
   log_level: str
+  openvpn_app_name: str
+  portal_band: float
+  portal_port: int
+  supervisor_driver: str
+  sync_db_path: str
+  sync_enabled: bool
+  sync_interval: int
+  wifi_interface: str
   networks:
   - ssid: str
     password: password
     id: str
-  openvpn_app_name: str
-  portal_port: int
-  portal_band: float
-image: ghcr.io/hevea-project/hassio-onboarding
-url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-onboarding
+image: ghcr.io/hevea-project/{arch}-gateway
+url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-gateway

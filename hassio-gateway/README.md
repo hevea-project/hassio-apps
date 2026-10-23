@@ -1,1 +1,1 @@
-# Hevea Onboarding App for HomeAssistant
+# Hevea Gateway for Home Assistant
