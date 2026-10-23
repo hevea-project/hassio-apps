@@ -75,13 +75,18 @@ images as `amd64-gateway`, `aarch64-gateway`).
 Home Assistant uses the `version` field from `config.yaml` as the Docker image tag:
 `version: "1.2.3"` → HA pulls `ghcr.io/hevea-project/gateway:1.2.3`.
 
-The mono-repo CI publishes images with tags derived from git tags (`v1.2.3` → `1.2.3`).
+**The git tag is the source of truth for versions.** The sync script reads the
+latest semver tag from the source repo (e.g. `1.2.3`) and uses it as the `version`
+in the synced `config.yaml`. The `version` in the source `config.yaml` is only a
+fallback when no git tag exists.
+
 To release a new version:
 
-1. Update `version` in `../docker/gateway/config.yaml` (mono-repo)
-2. Commit, push to master, and create a git tag `v1.2.3`
+1. Commit and push changes to `master` in the mono-repo (CI publishes `latest`)
+2. Create a semver tag (no `v` prefix): `git tag 1.2.3 && git push origin 1.2.3`
 3. CI publishes `ghcr.io/hevea-project/gateway:1.2.3`
 4. Sync this repo: `python3 sync_addons.py ../docker/gateway:hassio-gateway`
+   (the script reads the `1.2.3` tag and sets `version: "1.2.3"`)
 5. Commit and push — Home Assistant detects the new version
 
 The `version` in `config.yaml` must match a published image tag on GHCR.

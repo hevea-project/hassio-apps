@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 import re
 import yaml
@@ -52,6 +53,29 @@ ADDON_SLUG_MAP = {
 }
 
 
+def _get_latest_git_tag(repo_path: Path) -> str | None:
+    """Get the latest semver git tag (X.Y.Z) from a repository.
+
+    Returns None if the path is not a git repo or has no semver tags.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "tag", "--sort=-version:refname"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        for tag in result.stdout.strip().splitlines():
+            tag = tag.strip()
+            # Match semver: X.Y.Z (no 'v' prefix, no suffixes)
+            if re.match(r"^\d+\.\d+\.\d+$", tag):
+                return tag
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    return None
+
+
 def _strip_yaml_front_matter(content: str) -> str:
     """Remove YAML front matter markers (---) from the top of a config file."""
     lines = content.splitlines()
@@ -63,13 +87,15 @@ def _strip_yaml_front_matter(content: str) -> str:
 
 
 def _adapt_config(raw_content: str, addon_dir: Path, target_name: str | None = None,
-                  image_template: str = DEFAULT_IMAGE_TEMPLATE) -> str:
+                  image_template: str = DEFAULT_IMAGE_TEMPLATE,
+                  git_version: str | None = None) -> str:
     """
     Adapt a Supervisor-style config.yaml to the new Apps format:
       - Remove Supervisor-only fields
       - Set image from image_template
       - Update url to point to this repo
       - Set slug to target_name (defaults to addon directory name)
+      - Set version from git_version if provided (overrides source config)
     Returns the adapted YAML as a string.
     """
     content = _strip_yaml_front_matter(raw_content)
@@ -88,6 +114,10 @@ def _adapt_config(raw_content: str, addon_dir: Path, target_name: str | None = N
     # Remove Supervisor-only fields
     for key in OLD_SUPERVISOR_FIELDS:
         data.pop(key, None)
+
+    # Override version with git tag if available (the tag is the source of truth)
+    if git_version:
+        data["version"] = git_version
 
     # Ensure arch is a list and filter to supported platforms only
     if isinstance(data.get("arch"), str):
@@ -186,8 +216,13 @@ def sync_addon(addon_dir: Path, repo_root: Path, target_name: str | None = None,
         print(f"  [WARN] No config.yaml found in {addon_dir}")
         return
 
+    # Get the latest git tag from the source repo (tag = version, source of truth)
+    git_version = _get_latest_git_tag(addon_dir)
+    if git_version:
+        print(f"  [INFO] Latest git tag: {git_version}")
+
     config_raw = config_src.read_text(encoding="utf-8")
-    config_adapted = _adapt_config(config_raw, addon_dir, target_name, image_template)
+    config_adapted = _adapt_config(config_raw, addon_dir, target_name, image_template, git_version)
     config_dst = addon_out / "config.yaml"
     config_dst.write_text(config_adapted, encoding="utf-8")
     print(f"  [OK] config.yaml -> {config_dst}")
