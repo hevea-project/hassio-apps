@@ -9,6 +9,10 @@ Each <addon-dir> should be the root of an addon repository (the parent of hassio
 The script finds config.yaml and README.md/DOCS.md in each addon and syncs them
 into the corresponding subdirectory of this repository, adapting them for the
 new app format.
+
+The image field in the synced config.yaml is set from --image-template, where
+'{addon}' is replaced with the addon directory name. By default images are
+published to GHCR as ghcr.io/hevea-project/<addon>.
 """
 
 from __future__ import annotations
@@ -27,6 +31,11 @@ OLD_SUPERVISOR_FIELDS = {
     "boot",
 }
 
+# Default template for the image field in synced configs. '{addon}' is replaced
+# with the addon directory name; other placeholders such as '{arch}' are passed
+# through unchanged for Home Assistant to resolve per architecture.
+DEFAULT_IMAGE_TEMPLATE = "ghcr.io/hevea-project/{addon}"
+
 
 def _strip_yaml_front_matter(content: str) -> str:
     """Remove YAML front matter markers (---) from the top of a config file."""
@@ -38,11 +47,11 @@ def _strip_yaml_front_matter(content: str) -> str:
     return "\n".join(lines)
 
 
-def _adapt_config(raw_content: str, addon_dir: Path) -> str:
+def _adapt_config(raw_content: str, addon_dir: Path, image_template: str = DEFAULT_IMAGE_TEMPLATE) -> str:
     """
     Adapt a Supervisor-style config.yaml to the new Apps format:
       - Remove Supervisor-only fields
-      - Add image field
+      - Set image from image_template
       - Update url to point to this repo
     Returns the adapted YAML as a string.
     """
@@ -66,8 +75,8 @@ def _adapt_config(raw_content: str, addon_dir: Path) -> str:
     # Set slug to match the addon directory name (required for new Apps format)
     data["slug"] = addon_dir.name
 
-    # Set the image field using the addon directory name
-    data["image"] = f"docker.io/lebauce/hevea:{addon_dir.name}"
+    # Set the image field from the template, substituting the addon directory name
+    data["image"] = image_template.replace("{addon}", addon_dir.name)
 
     # Clean up null values in options (Home Assistant treats them as unset)
     if "options" in data and isinstance(data["options"], dict):
@@ -128,10 +137,11 @@ def _generate_minimal_docs(name: str, description: str) -> str:
     return f"# Home Assistant App: {name}\n\n{description}\n"
 
 
-def sync_addon(addon_dir: Path, repo_root: Path) -> None:
+def sync_addon(addon_dir: Path, repo_root: Path, image_template: str = DEFAULT_IMAGE_TEMPLATE) -> None:
     """Sync a single addon into the app repository."""
     addon_name = addon_dir.name
     addon_out = repo_root / addon_name
+    addon_out.mkdir(parents=True, exist_ok=True)
 
     # --- config.yaml ---
     config_src = _find_config_file(addon_dir)
@@ -140,7 +150,7 @@ def sync_addon(addon_dir: Path, repo_root: Path) -> None:
         return
 
     config_raw = config_src.read_text(encoding="utf-8")
-    config_adapted = _adapt_config(config_raw, addon_dir)
+    config_adapted = _adapt_config(config_raw, addon_dir, image_template)
     config_dst = addon_out / "config.yaml"
     config_dst.write_text(config_adapted, encoding="utf-8")
     print(f"  [OK] config.yaml -> {config_dst}")
@@ -191,6 +201,13 @@ def main() -> None:
         default=None,
         help="Path to the app repository root (default: directory of this script)",
     )
+    parser.add_argument(
+        "--image-template",
+        default=DEFAULT_IMAGE_TEMPLATE,
+        help="Image name template for synced configs; '{addon}' is replaced with the "
+        "addon directory name, other placeholders (e.g. '{arch}') are kept as-is "
+        "(default: %(default)s)",
+    )
     args = parser.parse_args()
 
     # Determine repo root
@@ -224,7 +241,7 @@ def main() -> None:
 
     for addon_dir in addon_paths:
         print(f"Syncing: {addon_dir.name}")
-        sync_addon(addon_dir, repo_root)
+        sync_addon(addon_dir, repo_root, args.image_template)
         print()
 
     print("Done.")

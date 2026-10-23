@@ -4,7 +4,7 @@ This document provides essential context for agents working with the **hevea-has
 
 ## Project Overview
 
-Home Assistant Apps repository containing three apps for the Hevea project. Each app is a container image referenced from Docker Hub (`docker.io/lebauce/hevea`). Dockerfiles live in the sibling addon repositories (`../hassio-access-point/`, `../hassio-openvpn/`, `../hassio-onboarding/`).
+Home Assistant Apps repository containing three apps for the Hevea project. Each app is a container image referenced from GHCR (`ghcr.io/hevea-project/<app>` by default; see `--image-template` in `sync_addons.py`). Dockerfiles live in the sibling addon repositories (`../hassio-access-point/`, `../hassio-openvpn/`, `../hassio-onboarding/`).
 
 ## Structure
 
@@ -42,7 +42,7 @@ Interactive captive portal for onboarding new Home Assistant users. Guides WiFi 
 All `config.yaml` files follow the Home Assistant Apps format:
 - `name`, `version`, `slug` (must match directory name), `description`
 - `arch`: `[aarch64, amd64]`
-- `image`: `docker.io/lebauce/hevea:<slug>`
+- `image`: set by `sync_addons.py` from `--image-template` (default `ghcr.io/hevea-project/<dir>`)
 - `options` / `schema`: input validation and defaults
 - Optional: `privileged`, `devices`, `host_network`, `host_dbus`, `hassio_api`, `hassio_role`, `webui`, `map`
 
@@ -57,7 +57,7 @@ python3 sync_addons.py ../hassio-access-point ../hassio-openvpn ../hassio-onboar
 The script:
 - Finds `config.yaml` (handles nested paths)
 - Strips Supervisor-only fields (`startup`, `boot`)
-- Sets `slug` to directory name, `image` to `docker.io/lebauce/hevea:<dir>`
+- Sets `slug` to directory name, `image` from `--image-template` (default `ghcr.io/hevea-project/<dir>`, override with e.g. `--image-template "docker.io/lebauce/hevea:{addon}"`)
 - Filters `arch` to supported platforms
 - Copies or generates `DOCS.md`
 
