@@ -41,4 +41,4 @@ map:
   read_only: false
 - type: ssl
   read_only: false
-image: docker.io/lebauce/hassio-openvpn
+image: ghcr.io/hevea-project/hassio-openvpn

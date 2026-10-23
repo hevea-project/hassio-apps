@@ -37,5 +37,5 @@ schema:
   openvpn_app_name: str
   portal_port: int
   portal_band: float
-image: docker.io/lebauce/hassio-onboarding
+image: ghcr.io/hevea-project/hassio-onboarding
 url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-onboarding

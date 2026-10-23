@@ -60,4 +60,4 @@ schema:
   - match(^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)
   dnsmasq_config_override:
   - str?
-image: docker.io/lebauce/hassio-access-point
+image: ghcr.io/hevea-project/hassio-access-point
