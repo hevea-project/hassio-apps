@@ -22,7 +22,7 @@ options:
   log_level: info
   openvpn_app_name: hassio-openvpn
   portal_band: 2.4
-  portal_port: 80
+  portal_port: 9000
   supervisor_driver: supervisor
   sync_db_path: /data/db
   sync_enabled: false
