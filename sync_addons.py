@@ -4,14 +4,19 @@ Sync Home Assistant addon configs and docs from source repos into this app repos
 
 Usage:
     python3 sync_addons.py <addon-dir> [<addon-dir> ...]
+    python3 sync_addons.py <addon-dir>:<target-name> [<addon-dir>:<target-name> ...]
 
 Each <addon-dir> should be the root of an addon repository (the parent of hassio-apps).
 The script finds config.yaml and README.md/DOCS.md in each addon and syncs them
 into the corresponding subdirectory of this repository, adapting them for the
 new app format.
 
+Use the <addon-dir>:<target-name> syntax to sync into a directory whose name
+differs from the source directory (e.g. ../docker/gateway:hassio-gateway
+syncs the gateway addon from the hevea mono-repo into hassio-gateway/).
+
 The image field in the synced config.yaml is set from --image-template, where
-'{addon}' is replaced with the addon directory name. By default images are
+'{addon}' is replaced with the target directory name. By default images are
 published to GHCR as ghcr.io/hevea-project/<addon>.
 """
 
@@ -36,6 +41,16 @@ OLD_SUPERVISOR_FIELDS = {
 # through unchanged for Home Assistant to resolve per architecture.
 DEFAULT_IMAGE_TEMPLATE = "ghcr.io/hevea-project/{addon}"
 
+# Mapping of add-on slugs used in the hevea mono-repo to the directory names
+# used in this apps repository. Applied to option values that reference other
+# add-ons (app_name, openvpn_app_name, ap_app_name).
+ADDON_SLUG_MAP = {
+    "hevea_hassio_gateway": "hassio-gateway",
+    "hevea_hassio_openvpn": "hassio-openvpn",
+    "hevea-hassio-access-point": "hassio-access-point",
+    "hevea_hassio_access_point": "hassio-access-point",
+}
+
 
 def _strip_yaml_front_matter(content: str) -> str:
     """Remove YAML front matter markers (---) from the top of a config file."""
@@ -47,12 +62,14 @@ def _strip_yaml_front_matter(content: str) -> str:
     return "\n".join(lines)
 
 
-def _adapt_config(raw_content: str, addon_dir: Path, image_template: str = DEFAULT_IMAGE_TEMPLATE) -> str:
+def _adapt_config(raw_content: str, addon_dir: Path, target_name: str | None = None,
+                  image_template: str = DEFAULT_IMAGE_TEMPLATE) -> str:
     """
     Adapt a Supervisor-style config.yaml to the new Apps format:
       - Remove Supervisor-only fields
       - Set image from image_template
       - Update url to point to this repo
+      - Set slug to target_name (defaults to addon directory name)
     Returns the adapted YAML as a string.
     """
     content = _strip_yaml_front_matter(raw_content)
@@ -60,7 +77,13 @@ def _adapt_config(raw_content: str, addon_dir: Path, image_template: str = DEFAU
     if not isinstance(data, dict):
         return raw_content  # fallback: return original
 
-    addon_name = data.get("slug", "unknown")
+    # Use target name if provided, otherwise the source directory name.
+    # The target name is used for slug, url, and app_name (things that must
+    # match the directory in this apps repo). The source directory name is
+    # used for the image template, since images are named after the service
+    # (e.g. ghcr.io/hevea-project/{arch}-gateway, not {arch}-hassio-gateway).
+    addon_name = target_name or addon_dir.name
+    image_name = addon_dir.name
 
     # Remove Supervisor-only fields
     for key in OLD_SUPERVISOR_FIELDS:
@@ -72,18 +95,31 @@ def _adapt_config(raw_content: str, addon_dir: Path, image_template: str = DEFAU
     if isinstance(data.get("arch"), list):
         data["arch"] = [a for a in data["arch"] if a in ("aarch64", "amd64")]
 
-    # Set slug to match the addon directory name (required for new Apps format)
-    data["slug"] = addon_dir.name
+    # Set slug to match the target directory name (required for new Apps format)
+    data["slug"] = addon_name
 
-    # Set the image field from the template, substituting the addon directory name
-    data["image"] = image_template.replace("{addon}", addon_dir.name)
+    # Set the image field from the template, substituting the source directory
+    # name (the image is named after the service, not the apps-repo directory)
+    data["image"] = image_template.replace("{addon}", image_name)
 
     # Clean up null values in options (Home Assistant treats them as unset)
     if "options" in data and isinstance(data["options"], dict):
         data["options"] = {k: v for k, v in data["options"].items() if v is not None}
+        # Update add-on slug references in options to match this repository's
+        # directory names. The gateway uses app_name as its own add-on slug
+        # to read/write options via the Supervisor API; openvpn_app_name and
+        # ap_app_name reference the sibling add-ons.
+        for opt_key in ("app_name", "openvpn_app_name", "ap_app_name"):
+            if opt_key in data["options"] and isinstance(data["options"][opt_key], str):
+                data["options"][opt_key] = ADDON_SLUG_MAP.get(
+                    data["options"][opt_key], data["options"][opt_key]
+                )
+        # app_name must match this add-on's own slug
+        if "app_name" in data["options"]:
+            data["options"]["app_name"] = addon_name
 
-    # Update url to point to this repo (using directory name)
-    data["url"] = f"https://github.com/hevea-project/hevea-hassio-apps/tree/main/{addon_dir.name}"
+    # Update url to point to this repo (using target directory name)
+    data["url"] = f"https://github.com/hevea-project/hassio-apps/tree/master/{addon_name}"
 
     # Normalize schema keys: remove trailing ? from str? etc.
     if "schema" in data and isinstance(data["schema"], dict):
@@ -137,9 +173,10 @@ def _generate_minimal_docs(name: str, description: str) -> str:
     return f"# Home Assistant App: {name}\n\n{description}\n"
 
 
-def sync_addon(addon_dir: Path, repo_root: Path, image_template: str = DEFAULT_IMAGE_TEMPLATE) -> None:
+def sync_addon(addon_dir: Path, repo_root: Path, target_name: str | None = None,
+               image_template: str = DEFAULT_IMAGE_TEMPLATE) -> None:
     """Sync a single addon into the app repository."""
-    addon_name = addon_dir.name
+    addon_name = target_name or addon_dir.name
     addon_out = repo_root / addon_name
     addon_out.mkdir(parents=True, exist_ok=True)
 
@@ -150,7 +187,7 @@ def sync_addon(addon_dir: Path, repo_root: Path, image_template: str = DEFAULT_I
         return
 
     config_raw = config_src.read_text(encoding="utf-8")
-    config_adapted = _adapt_config(config_raw, addon_dir, image_template)
+    config_adapted = _adapt_config(config_raw, addon_dir, target_name, image_template)
     config_dst = addon_out / "config.yaml"
     config_dst.write_text(config_adapted, encoding="utf-8")
     print(f"  [OK] config.yaml -> {config_dst}")
@@ -193,7 +230,9 @@ def main() -> None:
     parser.add_argument(
         "addons",
         nargs="+",
-        help="Paths to addon directories to sync (or their parent containing the addon subdirs)",
+        help="Paths to addon directories to sync. Use 'path:target-name' to sync "
+        "into a directory whose name differs from the source (e.g. "
+        "'../docker/gateway:hassio-gateway').",
     )
     parser.add_argument(
         "--repo",
@@ -205,8 +244,8 @@ def main() -> None:
         "--image-template",
         default=DEFAULT_IMAGE_TEMPLATE,
         help="Image name template for synced configs; '{addon}' is replaced with the "
-        "addon directory name, other placeholders (e.g. '{arch}') are kept as-is "
-        "(default: %(default)s)",
+        "source directory name (not the target name), other placeholders (e.g. "
+        "'{arch}') are kept as-is (default: %(default)s)",
     )
     args = parser.parse_args()
 
@@ -220,28 +259,33 @@ def main() -> None:
         print(f"Error: repository root not found: {repo_root}", file=sys.stderr)
         sys.exit(1)
 
-    # Resolve addon directories
-    addon_paths: list[Path] = []
+    # Resolve addon directories (support 'path:target-name' syntax)
+    addon_specs: list[tuple[Path, str | None]] = []
     for arg in args.addons:
-        p = Path(arg).resolve()
+        target_name: str | None = None
+        path_str = arg
+        if ":" in arg:
+            path_str, target_name = arg.rsplit(":", 1)
+        p = Path(path_str).resolve()
         if p.is_dir():
             # If it contains a subdirectory that looks like an addon (has config.yaml),
             # use that subdirectory; otherwise use the directory itself.
             config = _find_config_file(p)
             if config and config.parent != p:
                 # The config is nested; the addon dir is the parent
-                addon_paths.append(config.parent.parent)
+                addon_specs.append((config.parent.parent, target_name))
             else:
-                addon_paths.append(p)
+                addon_specs.append((p, target_name))
         else:
-            print(f"Error: path not found: {arg}", file=sys.stderr)
+            print(f"Error: path not found: {path_str}", file=sys.stderr)
             sys.exit(1)
 
-    print(f"Syncing {len(addon_paths)} addon(s) into {repo_root}\n")
+    print(f"Syncing {len(addon_specs)} addon(s) into {repo_root}\n")
 
-    for addon_dir in addon_paths:
-        print(f"Syncing: {addon_dir.name}")
-        sync_addon(addon_dir, repo_root, args.image_template)
+    for addon_dir, target_name in addon_specs:
+        display_name = target_name or addon_dir.name
+        print(f"Syncing: {addon_dir.name} -> {display_name}")
+        sync_addon(addon_dir, repo_root, target_name, args.image_template)
         print()
 
     print("Done.")
