@@ -8,6 +8,7 @@ arch:
 - amd64
 url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-access-point
 image: ghcr.io/hevea-project/hassio-access-point
+startup: application
 host_network: true
 apparmor: true
 host_dbus: true
