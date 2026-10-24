@@ -1,4 +1,4 @@
-name: Hevea Access Point
+name: Hass.io Access Point for Hevea
 version: 1.0.0
 slug: hassio-access-point
 description: Create a WiFi access point to directly connect devices to Home Assistant
@@ -15,6 +15,7 @@ privileged:
 - NET_ADMIN
 init: false
 options:
+  ssid: Hevea Access Point
   channel: 6
   address: 192.168.99.1
   netmask: 255.255.255.0
@@ -33,7 +34,7 @@ options:
   dnsmasq_config_override: []
 schema:
   ssid: match(^.{2,32}$)
-  wpa_passphrase: password
+  wpa_passphrase: str?
   channel: int(1,13)
   address: match(^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)
   netmask: match(^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)
