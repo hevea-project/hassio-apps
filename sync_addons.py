@@ -33,7 +33,6 @@ from pathlib import Path
 # Fields valid in the old Supervisor add-on format that should be removed
 # for the newer Apps format.
 OLD_SUPERVISOR_FIELDS = {
-    "startup",
     "boot",
 }
 
