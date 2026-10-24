@@ -27,7 +27,7 @@ options:
   sync_db_path: /data/db
   sync_enabled: false
   sync_interval: 300
-  wifi_interface: ''
+  wifi_interface: wlan1
   networks:
   - ssid: Hevea Access Point
     password: abcd1234
