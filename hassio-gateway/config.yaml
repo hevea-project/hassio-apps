@@ -15,9 +15,12 @@ options:
   access_point: true
   api_addr: 0.0.0.0:7040
   app_addr: https://app.hevea-project.io
+  app_name: ''
+  ap_app_name: ''
   ap_ssid: ''
   commission_extract_path: /data/commissions
   log_level: info
+  openvpn_app_name: ''
   portal_band: 2.4
   portal_port: 9000
   supervisor_driver: supervisor
@@ -33,9 +36,12 @@ schema:
   access_point: bool
   api_addr: str
   app_addr: str
+  app_name: str
+  ap_app_name: str
   ap_ssid: str
   commission_extract_path: str
   log_level: str
+  openvpn_app_name: str
   portal_band: float
   portal_port: int
   supervisor_driver: str

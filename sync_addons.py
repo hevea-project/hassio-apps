@@ -139,14 +139,14 @@ def _adapt_config(raw_content: str, addon_dir: Path, target_name: str | None = N
         # directory names. The gateway uses app_name as its own add-on slug
         # to read/write options via the Supervisor API; openvpn_app_name and
         # ap_app_name reference the sibling add-ons.
+        # Remap explicitly set slugs to this repository's directory names.
+        # Empty values are kept as-is: the gateway discovers the add-on
+        # slugs on the Supervisor when they are not set.
         for opt_key in ("app_name", "openvpn_app_name", "ap_app_name"):
             if opt_key in data["options"] and isinstance(data["options"][opt_key], str):
                 data["options"][opt_key] = ADDON_SLUG_MAP.get(
                     data["options"][opt_key], data["options"][opt_key]
                 )
-        # app_name must match this add-on's own slug
-        if "app_name" in data["options"]:
-            data["options"]["app_name"] = addon_name
 
     # Update url to point to this repo (using target directory name)
     data["url"] = f"https://github.com/hevea-project/hassio-apps/tree/master/{addon_name}"
