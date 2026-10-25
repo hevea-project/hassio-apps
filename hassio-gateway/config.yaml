@@ -1,7 +1,7 @@
 name: Hevea Gateway
 description: 'Hevea Gateway: device commissioning, onboarding portal and user database
   sync'
-version: 1.0.0
+version: latest
 slug: hassio-gateway
 init: false
 arch:
