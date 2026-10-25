@@ -1,3 +1,3 @@
-# Hevea Gateway for Home Assistant
+# Home Assistant App: Hevea Gateway
 
-Device commissioning, onboarding portal and user database sync.
+'Hevea Gateway: device commissioning, onboarding portal and user database

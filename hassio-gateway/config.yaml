@@ -1,5 +1,6 @@
 name: Hevea Gateway
-description: Hevea Gateway - device commissioning, onboarding portal and user database sync
+description: 'Hevea Gateway: device commissioning, onboarding portal and user database
+  sync'
 version: 1.0.0
 slug: hassio-gateway
 init: false
@@ -15,18 +16,19 @@ options:
   access_point: true
   api_addr: 0.0.0.0:7040
   app_addr: https://app.hevea-project.io
+  homeassistant_addr: http://127.0.0.1:80
   app_name: ''
-  ap_app_name: ''
-  ap_ssid: ''
-  commission_extract_path: /data/commissions
   log_level: info
   openvpn_app_name: ''
-  portal_band: 2.4
+  ap_app_name: ''
+  ap_ssid: ''
   portal_port: 9000
+  portal_band: 2.4
   supervisor_driver: supervisor
-  sync_db_path: /data/db
   sync_enabled: false
   sync_interval: 300
+  sync_db_path: /data/db
+  commission_extract_path: /data/commissions
   networks:
   - ssid: Hevea Access Point
     password: abcd1234
@@ -35,18 +37,19 @@ schema:
   access_point: bool
   api_addr: str
   app_addr: str
+  homeassistant_addr: str
   app_name: str
-  ap_app_name: str
-  ap_ssid: str
-  commission_extract_path: str
   log_level: str
   openvpn_app_name: str
-  portal_band: float
+  ap_app_name: str
+  ap_ssid: str
   portal_port: int
+  portal_band: float
   supervisor_driver: str
-  sync_db_path: str
   sync_enabled: bool
   sync_interval: int
+  sync_db_path: str
+  commission_extract_path: str
   networks:
   - ssid: str
     password: password
