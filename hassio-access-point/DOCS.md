@@ -23,7 +23,7 @@ Please add
 - **address** (**required**): The address of your hass.io WiFi card/network
 - **netmask** (**required**): Subnet mask of the network
 - **broadcast** (**required**): Broadcast address of the network
-- **interface** (_optional_): Which wlan card to use. Default: wlan1
+- **interface** (_optional_): Which wlan card to use. Default: wlan0
 - **hide_ssid** (_optional_): Whether SSID is visible or hidden. 0 = visible, 1 = hidden. Defaults to visible
 - **dhcp** (_optional_): Enable or disable DHCP server. 0 = disable, 1 = enable. Defaults to disabled
 - **dhcp_start_addr** (_optional_): Start address for DHCP range. Required if DHCP enabled
@@ -48,7 +48,7 @@ Note: use either allow or deny lists for MAC filtering. If using allow, deny wil
     "address": "192.168.10.1",
     "netmask": "255.255.255.0",
     "broadcast": "192.168.10.255",
-    "interface": "wlan1",
+    "interface": "wlan0",
     "hide_ssid": "1",
     "dhcp": "1",
     "dhcp_start_addr": "192.168.10.10",

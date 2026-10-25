@@ -32,9 +32,7 @@ from pathlib import Path
 
 # Fields valid in the old Supervisor add-on format that should be removed
 # for the newer Apps format.
-OLD_SUPERVISOR_FIELDS = {
-    "boot",
-}
+OLD_SUPERVISOR_FIELDS = set()
 
 # Default template for the image field in synced configs. '{addon}' is replaced
 # with the addon directory name; other placeholders such as '{arch}' are passed
