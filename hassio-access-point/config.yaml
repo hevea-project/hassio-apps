@@ -24,7 +24,7 @@ options:
   broadcast: 192.168.99.255
   interface: wlan1
   hide_ssid: false
-  dhcp: false
+  dhcp: true
   dhcp_start_addr: 192.168.99.10
   dhcp_end_addr: 192.168.99.20
   allow_mac_addresses: []
