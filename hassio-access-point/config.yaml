@@ -13,7 +13,7 @@ host_network: true
 # The run.sh script uses bashio, which reads the add-on options through the
 # Supervisor API when /data/options.json is not available.
 hassio_api: true
-hassio_role: default
+hassio_role: admin
 apparmor: true
 host_dbus: true
 privileged:
