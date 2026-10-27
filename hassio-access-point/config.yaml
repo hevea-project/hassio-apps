@@ -10,6 +10,10 @@ url: https://github.com/hevea-project/hassio-apps/tree/master/hassio-access-poin
 image: ghcr.io/hevea-project/hassio-access-point
 boot: manual
 host_network: true
+# The run.sh script uses bashio, which reads the add-on options through the
+# Supervisor API when /data/options.json is not available.
+hassio_api: true
+hassio_role: default
 apparmor: true
 host_dbus: true
 privileged:
